@@ -1,68 +1,73 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Diagnostics;
-using WebAppMVCComboCascadeEF.Models;
+using CLCommon.Models;                  // Entity Framework nella class library CLCommon
+using WebAppMVCComboCascadeEF.Models;    // CascadingModel, ErrorViewModel
 
-namespace WebAppMVCComboCascadeEF.Controllers
+namespace WebAppComboCascadeEF.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
         private readonly CorsoAcademyContext _context;
+
+        // USAGE SERILOG
+        private readonly ILogger<HomeController> _logger;
+
         public HomeController(CorsoAcademyContext context, ILogger<HomeController> logger)
         {
             _context = context;
             _logger = logger;
         }
-        public ActionResult Index()
+
+        // https://www.aspsnippets.com/Articles/3067/Cascading-Dependent-DropDownList-in-ASPNet-MVC/
+
+        public IActionResult Index()
         {
+            // COUNTRY === REGIONE
             CascadingModel model = new CascadingModel();
-            foreach (var country in _context.TRegiones)
+            foreach (var reg in _context.TRegiones)
             {
-                model.Regioni.Add(new SelectListItem { Text = country.Nome, Value = country.Id.ToString() });
+                model.comboListRegioni.Add(new SelectListItem { Text = reg.Nome, Value = reg.Id.ToString() });
             }
             return View(model);
         }
+
         [HttpPost]
-        public ActionResult Index(int? IdRegione, int? IdProvincia, int? IdComune)
+        public ActionResult Index(int? regioneId, int? provinciaId, int? comuneId)
         {
+            // COUNTRY === REGIONE
             CascadingModel model = new CascadingModel();
-
-            // Popolamento delle dropdown Regioni
-            foreach (var regione in _context.TRegiones)
+            foreach (var reg in _context.TRegiones)
             {
-                model.Regioni.Add(new SelectListItem { Text = regione.Nome, Value = regione.Id.ToString() });
+                model.comboListRegioni.Add(new SelectListItem { Text = reg.Nome, Value = reg.Id.ToString() });
             }
 
-            // Se è stato selezionato un paese, popola le dropdown Province
-            if (IdRegione.HasValue)
+            if (regioneId.HasValue)
             {
-                var province = _context.TProvincia.Where(provincia => provincia.IdRegione == IdRegione.Value).ToList();
-                foreach (var provincia in province)
+                // STATES === PROVINCIA
+                var listProvince = (from prov in _context.TProvincia
+                                    where prov.IdRegione == regioneId.Value
+                                    select prov).ToList();
+                foreach (var prov in listProvince)
                 {
-                    model.Province.Add(new SelectListItem { Text = provincia.Nome, Value = provincia.Id.ToString() });
+                    model.comboListaProvince.Add(new SelectListItem { Text = prov.Nome, Value = prov.Id.ToString() });
                 }
 
-                // Imposta il valore selezionato per la dropdown Regione
-                model.IdRegione = IdRegione.Value;
-
-                // Se è stato selezionato uno stato, popola le dropdown Comuni
-                if (IdComune.HasValue)
+                if (provinciaId.HasValue)
                 {
-                    var cities = _context.TComunes.Where(city => city.IdProvincia == IdComune.Value).ToList();
-                    foreach (var city in cities)
+                    // CITIES === COMUNI
+                    var listComuni = (from com in _context.TComunes
+                                      where com.IdProvincia == provinciaId.Value
+                                      select com).ToList();
+                    foreach (var com in listComuni)
                     {
-                        model.Comuni.Add(new SelectListItem { Text = city.Nome, Value = city.Id.ToString() });
+                        model.comboListaComuni.Add(new SelectListItem { Text = com.Nome, Value = com.Id.ToString() });
                     }
-
-                    // Imposta il valore selezionato per la dropdown Provincia
-                    model.IdComune = IdComune.Value;
                 }
             }
 
             return View(model);
         }
-
 
         public IActionResult Privacy()
         {

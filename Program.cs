@@ -1,6 +1,6 @@
 using Serilog.Events;
 using Serilog;
-using WebAppMVCComboCascadeEF.Models;
+using CLCommon.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -43,6 +43,8 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
+
+//SERILOG
 app.UseSerilogRequestLogging();
 
 app.UseRouting();

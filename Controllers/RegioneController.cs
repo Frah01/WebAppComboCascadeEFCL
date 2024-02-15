@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using CLBuisnessLayer;
-using CLDataLayer;
+using CLCommon.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.EntityFrameworkCore;
+using WebAppComboCascadeEF.Controllers;
 using WebAppMVCComboCascadeEF.Models;
 
 namespace WebAppMVCComboCascadeEF.Controllers
@@ -36,11 +37,11 @@ namespace WebAppMVCComboCascadeEF.Controllers
         public async Task<IActionResult> Index()
         {
             // USAGE SERILOG
-            List<CLCommon.TRegione> listRegioni = null;
+            List<CLCommon.Models.TRegione> listRegioni = null;
             try
             {
-                oBL = new ManageBL();
-                listRegioni = oBL.getAllRegioni();
+                oBL = new ManageBL(_context);
+                listRegioni = await oBL.getAllRegioniAsync();
                 // https://learn.microsoft.com/en-us/ef/core/querying/sql-queries
                 // listRegioni = await _context.TRegiones.FromSql($"EXECUTE dbo.getAllRegioni").ToListAsync(); PER LA STORED PROCEDURE
                 // listRegioni = await _context.TRegiones.ToListAsync();
