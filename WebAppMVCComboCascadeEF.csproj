@@ -18,8 +18,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Remove="Controllers\ComuneController.cs" />
     <Compile Remove="Controllers\ProvinciaController.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Views\Comune\Index.cshtml" />
   </ItemGroup>
 
   <ItemGroup>

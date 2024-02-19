@@ -1,6 +1,7 @@
 using Serilog.Events;
 using Serilog;
 using CLCommon.Models;
+using CLCommon.Repository;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,6 +31,7 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<CorsoAcademyContext>(
     );
 
+// builder.Services.AddScoped<IRepositoryAsync, ComuneService>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

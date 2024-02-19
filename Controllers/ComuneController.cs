@@ -2,27 +2,35 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using CLCommon.Models;
+using CLCommon.Repository;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using WebAppMVCComboCascadeEF.Models;
 
 namespace WebAppMVCComboCascadeEF.Controllers
 {
     public class ComuneController : Controller
     {
         private readonly CorsoAcademyContext _context;
+        private readonly IRepositoryAsync<TComune> _comuneRepAsync;
+        private EntityFrameworkRepositoryAsync<TComune> _comuneRep;
+        
 
-        public ComuneController(CorsoAcademyContext context)
+        public ComuneController(CorsoAcademyContext context, IRepositoryAsync<TComune> comuneRepAsync)
         {
             _context = context;
+            _comuneRepAsync = comuneRepAsync;
         }
 
         // GET: Comune
         public async Task<IActionResult> Index()
         {
-            var corsoAcademyContext = _context.TComunes.Include(t => t.IdProvinciaNavigation);
-            return View(await corsoAcademyContext.ToListAsync());
+
+            _comuneRep = new EntityFrameworkRepositoryAsync<TComune>(_context);
+            List<TComune> listComuni = (List<TComune>)await _comuneRep.GetAllAsync();
+            return View(listComuni);
+
         }
 
         // GET: Comune/Details/5
