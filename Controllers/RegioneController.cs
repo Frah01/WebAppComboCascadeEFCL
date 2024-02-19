@@ -2,87 +2,83 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using CLBuisnessLayer;
-using CLCommon.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.EntityFrameworkCore;
-using WebAppComboCascadeEF.Controllers;
-using WebAppMVCComboCascadeEF.Models;
-
-namespace WebAppMVCComboCascadeEF.Controllers
+using CLCommon.Models;
+using CLBusinessLayer;
+namespace EsempioDa0.Controllers
 {
     public class RegioneController : Controller
     {
         private readonly CorsoAcademyContext _context;
-
-        //USAGE SERILOG
-        private readonly ILogger<HomeController> _logger;
-
-        private ManageBL oBL = null;
-
-        
-
-        //Dependency Injection
-
-        public RegioneController(CorsoAcademyContext context, ILogger<HomeController> logger)
+        private ManageBL oBl = null;
+        public RegioneController(CorsoAcademyContext context)
         {
+
             _context = context;
-            _logger = logger;
         }
 
         // GET: Regione
-        // GET: Regione
         public async Task<IActionResult> Index()
         {
-            // USAGE SERILOG
             List<CLCommon.Models.TRegione> listRegioni = null;
-            try
-            {
-                oBL = new ManageBL(_context);
-                listRegioni = await oBL.getAllRegioniAsync();
-                // https://learn.microsoft.com/en-us/ef/core/querying/sql-queries
-                // listRegioni = await _context.TRegiones.FromSql($"EXECUTE dbo.getAllRegioni").ToListAsync(); PER LA STORED PROCEDURE
-                // listRegioni = await _context.TRegiones.ToListAsync();
-                _logger.LogDebug("Regioni presenti {0}", listRegioni.Count);
-                _logger.LogInformation("Lista delle regioni");
-                // throw new Exception("Errore"); Generare Errore per controllare se SERILOG funziona
-            }
-            catch (Exception ex)
-            {
-                string sErr = string.Empty;
-                if(ex.InnerException != null)
-                {
-                    sErr = string.Format("Source : {0}{4}Message : {1}{4}StackTrace: {2}{4}InnerException: {3}{4}", ex.Source, ex.Message, ex.StackTrace,ex.InnerException.Message, System.Environment.NewLine);
-                }
-                else
-                {
-                    sErr = string.Format("Source : {0}{3}Message : {1}{3}StackTrace: {2}{3}", ex.Source, ex.Message, ex.StackTrace, System.Environment.NewLine);
 
-                }
-                _logger.LogError(sErr);
-                throw;
-            }
+            oBl = new ManageBL(_context);
+            listRegioni = await oBl.getAllRegioniAsync();
+
             return View(listRegioni);
         }
 
         // GET: Regione/Details/5
+        //public async Task<IActionResult> Details(int? id)
+        //{
+        //    if (id == null)
+        //    {
+        //        return NotFound();
+        //    }
+
+        //    var tRegione = await _context.TRegiones
+        //        .FirstOrDefaultAsync(m => m.Id == id);
+        //    if (tRegione == null)
+        //    {
+        //        return NotFound();
+        //    }
+
+        //    return View(tRegione);
+        //}
         public async Task<IActionResult> Details(int? id)
         {
+            TRegione oRegione = null;
+
             if (id == null)
             {
                 return NotFound();
             }
 
-            var tRegione = await _context.TRegiones
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (tRegione == null)
+            try
             {
-                return NotFound();
+                oBl = new ManageBL(_context);
+                oRegione = await oBl.getDettaglioRegioneAsync(id);
+
+            }
+            catch (Exception ex)
+            {
+                //TODO MODIFICA DA APPORTARE AL sErr
+                string sErr = string.Empty;
+                if (ex.InnerException != null)
+                {
+                    sErr = ex.InnerException.Message;
+                }
+                else
+                {
+                    sErr = ex.Message;
+                }
             }
 
-            return View(tRegione);
+
+
+            return View(oRegione);
         }
 
         // GET: Regione/Create
@@ -90,6 +86,22 @@ namespace WebAppMVCComboCascadeEF.Controllers
         {
             return View();
         }
+
+        //// POST: Regione/Create
+        //// To protect from overposting attacks, enable the specific properties you want to bind to.
+        //// For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        //[HttpPost]
+        //[ValidateAntiForgeryToken]
+        //public async Task<IActionResult> Create([Bind("Id,Nome,IsAutonoma,NumAbitanti")] TRegione tRegione)
+        //{
+        //    if (ModelState.IsValid)
+        //    {
+        //        _context.Add(tRegione);
+        //        await _context.SaveChangesAsync();
+        //        return RedirectToAction(nameof(Index));
+        //    }
+        //    return View(tRegione);
+        //}
 
         // POST: Regione/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
@@ -100,11 +112,30 @@ namespace WebAppMVCComboCascadeEF.Controllers
         {
             if (ModelState.IsValid)
             {
-                _context.Add(tRegione);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                Boolean isAdded = false;
+                try
+                {
+                    oBl = new ManageBL(_context);
+                    isAdded = await oBl.insRegioneAsync(tRegione);
+
+
+
+                }
+                catch (Exception ex)
+                {
+                    //TODO: Leggera modifica da apportare al sErr
+                    string sErr = string.Empty;
+                    if (ex.InnerException != null)
+                    {
+                        sErr = ex.InnerException.Message;
+                    }
+                    else
+                    {
+                        sErr = ex.Message;
+                    }
+                }
             }
-            return View(tRegione);
+            return RedirectToAction(nameof(Index));
         }
 
         // GET: Regione/Edit/5
@@ -137,10 +168,11 @@ namespace WebAppMVCComboCascadeEF.Controllers
 
             if (ModelState.IsValid)
             {
+                Boolean isUpdated = false;
                 try
                 {
-                    _context.Update(tRegione);
-                    await _context.SaveChangesAsync();
+                    oBl = new ManageBL(_context);
+                    isUpdated = await oBl.updRegioneAsync(tRegione);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -190,6 +222,8 @@ namespace WebAppMVCComboCascadeEF.Controllers
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
+
+
 
         private bool TRegioneExists(int id)
         {

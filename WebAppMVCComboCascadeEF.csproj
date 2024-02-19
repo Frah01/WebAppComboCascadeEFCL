@@ -23,13 +23,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Remove="Views\Regione\Create.cshtml" />
-    <Content Remove="Views\Regione\Delete.cshtml" />
-    <Content Remove="Views\Regione\Details.cshtml" />
-    <Content Remove="Views\Regione\Edit.cshtml" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.QuickGrid.EntityFrameworkAdapter" Version="8.0.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.1">
